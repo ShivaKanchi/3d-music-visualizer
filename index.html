@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Music Equalizer</title>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
         <style>
         body { margin: 0; overflow: hidden; background-color: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
         canvas { display: block; }
@@ -53,9 +54,40 @@
         #hidden-file-input {
             display: none; /* Hide the actual file input */
         }
+        #tooltip-container {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            cursor: pointer;
+            color: #fff;
+        }
+        #tooltip-container .tooltip-text {
+            visibility: hidden;
+            width: 160px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px 0;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -80px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        #tooltip-container:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
         </style>
     </head>
     <body>
+        <div id="tooltip-container">
+            <i class="fas fa-play"></i>
+            <span class="tooltip-text">Click to play default audio</span>
+        </div>
         <input type="file" id="hidden-file-input" accept="audio/*">
         <div id="upload-icon-container">
             <span>+</span>
@@ -148,6 +180,7 @@
             });
             document.getElementById('hidden-file-input').addEventListener('change', handleFileSelect);
             document.getElementById('remove-file-bottom').addEventListener('click', resetAudio);
+            document.getElementById('tooltip-container').addEventListener('click', playDefaultAudio);
         }
 
         // Function to create a specified number of lines
@@ -773,6 +806,41 @@
         window.onload = function () {
             initThree();
             // Equalizer animation starts when audio is loaded and played
+        }
+
+        function playDefaultAudio() {
+            fetch('music/music-metadata.json')
+                .then(response => response.json())
+                .then(data => {
+                    const audioUrl = 'music/' + data.filename;
+                    loadAudioFromUrl(audioUrl);
+                })
+                .catch(error => console.error('Error fetching music metadata:', error));
+        }
+
+        function loadAudioFromUrl(url) {
+            const request = new XMLHttpRequest();
+            request.open('GET', url, true);
+            request.responseType = 'arraybuffer';
+
+            request.onload = function() {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                audioContext.decodeAudioData(request.response, function(buffer) {
+                    if (source) {
+                        source.stop();
+                        source.disconnect();
+                    }
+                    initAudio(buffer);
+                    document.getElementById('upload-icon-container').style.display = 'none';
+                    document.getElementById('file-info-bottom').style.display = 'flex';
+                    document.getElementById('file-name-bottom').textContent = url.split('/').pop();
+                }, function(e) {
+                    console.error("Error decoding audio data", e);
+                    resetAudio();
+                });
+            };
+
+            request.send();
         }
         </script>
     </body>
