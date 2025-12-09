@@ -22,7 +22,7 @@ let previousMouseX = 0;
 let previousMouseY = 0;
 
 // Initial camera position and line counts
-const initialCameraZ = 100;
+const initialCameraZ = 280;
 const baseLineCount = 150;
 const maxLineCount = 200;
 const minLineCount = 50;
