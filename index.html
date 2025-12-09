@@ -517,8 +517,8 @@
       source.connect(analyser); // Connect source to analyser
       analyser.connect(audioContext.destination); // Connect analyser to speakers
 
-      analyser.fftSize = 2048; // Increased for better frequency resolution (must be power of 2)
-      analyser.smoothingTimeConstant = 0.75; // Smooth out the data (0-1, higher = smoother)
+      analyser.fftSize = 1024; // Decreased for faster response (must be power of 2)
+      analyser.smoothingTimeConstant = 0.5; // Lower smoothing for snappier response (0-1)
       analyser.minDecibels = -90; // Minimum power value for scaling
       analyser.maxDecibels = -10; // Maximum power value for scaling
 
@@ -546,31 +546,29 @@
       if (file) {
         const reader = new FileReader();
         reader.onload = function (e) {
-          // Decode audio data
-          audioContext = new (window.AudioContext ||
-            window.webkitAudioContext)(); // Create context here for decoding
-          audioContext.decodeAudioData(
+          // Use a temporary context for decoding so we don’t overwrite the active 'audioContext' yet
+          const decodingContext = new (window.AudioContext || window.webkitAudioContext)();
+          decodingContext.decodeAudioData(
             e.target.result,
             function (buffer) {
-              // Stop previous audio if playing
-              if (source) {
-                source.stop();
-                source.disconnect();
-              }
+              // Successfully decoded. Now stop any previous audio and close old context.
+              stopAudio();
 
-              initAudio(buffer); // Initialize audio with the new buffer
+              // Initialize audio with the new buffer (this creates a new main 'audioContext')
+              initAudio(buffer);
+
+              // We can close the decoding context now (buffers are independent)
+              decodingContext.close();
 
               // Display file name and remove option at the bottom
-              // Hide both icons now that music is playing
               setIconsVisible(false);
-              document.getElementById("file-info-bottom").style.display =
-                "flex";
-              document.getElementById("file-name-bottom").textContent =
-                file.name;
+              document.getElementById("file-info-bottom").style.display = "flex";
+              document.getElementById("file-name-bottom").textContent = file.name;
             },
             function (e) {
               console.error("Error decoding audio data", e);
-              // Reset UI if decoding fails
+              // Clean up decoding context even on error
+              decodingContext.close();
               resetAudio();
             }
           );
@@ -579,19 +577,24 @@
       }
     }
 
-    // Reset audio and UI
-    function resetAudio() {
+    // Helper to stop audio and invalidte context without manipulating UI
+    function stopAudio() {
       if (source) {
-        source.stop();
-        source.disconnect();
+        try { source.stop(); } catch (e) { }
+        try { source.disconnect(); } catch (e) { }
         source = null;
       }
       if (audioContext) {
-        audioContext.close();
+        try { audioContext.close(); } catch (e) { }
         audioContext = null;
       }
       analyser = null;
       dataArray = null;
+    }
+
+    // Reset audio and UI
+    function resetAudio() {
+      stopAudio();
 
       // Reset UI
       // Show icons again when audio is stopped/reset
@@ -679,6 +682,11 @@
       // Removed the rotation based on mouseX here
 
       if (analyser && dataArray) {
+        // Auto-rotate scene slowly if not dragging (idle state)
+        if (!isDragging) {
+          scene.rotation.y += 0.0001;
+        }
+
         analyser.getByteFrequencyData(dataArray); // Get frequency data
 
         const dataArrayLength = dataArray.length;
@@ -710,7 +718,7 @@
         ); // Clamp within min/max
 
         // Adjust line count dynamically - but limit changes per frame for smoother transitions
-        const maxLinesPerFrame = 7; // Don't add/remove too many at once
+        const maxLinesPerFrame = 25; // Increase this to allow faster transitions during drops
         let linesAdded = 0;
 
         while (lines.length < targetLineCount && linesAdded < maxLinesPerFrame) {
@@ -1097,26 +1105,26 @@
       request.responseType = "arraybuffer";
 
       request.onload = function () {
-        audioContext = new (window.AudioContext ||
-          window.webkitAudioContext)();
-        audioContext.decodeAudioData(
+        // Use temporary context for decoding
+        const decodingContext = new (window.AudioContext || window.webkitAudioContext)();
+        decodingContext.decodeAudioData(
           request.response,
           function (buffer) {
-            if (source) {
-              source.stop();
-              source.disconnect();
-            }
+            // Clean up old audio resources first
+            stopAudio();
+
             initAudio(buffer);
-            document.getElementById("upload-icon-container").style.display =
-              "none";
-            document.getElementById("file-info-bottom").style.display =
-              "flex";
-            document.getElementById("file-name-bottom").textContent = url
-              .split("/")
-              .pop();
+
+            // Close decoding context
+            decodingContext.close();
+
+            document.getElementById("upload-icon-container").style.display = "none";
+            document.getElementById("file-info-bottom").style.display = "flex";
+            document.getElementById("file-name-bottom").textContent = url.split("/").pop();
           },
           function (e) {
             console.error("Error decoding audio data", e);
+            decodingContext.close();
             resetAudio();
           }
         );

@@ -13,7 +13,7 @@ let windowHalfY = window.innerHeight / 2;
 // Shooting star control variables
 let isShootingStarActive = false;
 let lastShootingStarTime = 0;
-const shootingStarInterval = 3000; // 3 seconds
+const shootingStarInterval = 2000; // 2 seconds
 const shootingStarDuration = 1500;
 
 // Mouse interaction variables
@@ -23,14 +23,30 @@ let previousMouseY = 0;
 
 // Initial camera position and line counts
 const initialCameraZ = 280;
-const baseLineCount = 150;
-const maxLineCount = 200;
-const minLineCount = 50;
+const baseLineCount = 90;
+const maxLineCount = 150;
+const minLineCount = 20;
 
 // Frequency ranges (populated when audio analyser is created)
 let frequencyRanges = {};
 
 function initThree() {
+  // Cleanup previous Three.js instance if it exists
+  if (renderer) {
+    if (renderer.domElement && renderer.domElement.parentNode) {
+      renderer.domElement.parentNode.removeChild(renderer.domElement);
+    }
+    renderer.dispose();
+  }
+
+  // Reset globals
+  scene = null;
+  camera = null;
+  renderer = null;
+  lines = [];
+  stars = null;
+  starData = [];
+
   scene = new THREE.Scene();
   scene.background = new THREE.Color(0x000000);
 

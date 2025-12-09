@@ -1,4 +1,14 @@
 {
-  "filename": "Kendrick Lamar - All The Stars.mp3",
-  "description": "Default music track. Click to play."
+  "tracks": [
+    {
+      "title": "Kendrick Lamar - All The Stars",
+      "filename": "Kendrick Lamar - All The Stars.mp3",
+      "viz": "spiral"
+    },
+    {
+      "title": "playboi carti - arm n leg",
+      "filename": "playboi carti - arm n leg.mp3",
+      "viz": "spiral"
+    }
+  ]
 }
