@@ -1,0 +1,162 @@
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    canvas {
+      display: block;
+    }
+
+    #upload-icon-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      font-family: sans-serif;
+      color: #fff;
+      text-align: center;
+      cursor: pointer;
+      font-size: 60px;
+      /* Adjust size as needed */
+      border: 1px solid #fff;
+      /* padding: 20px; */
+      height: 55px;
+      width: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    #file-info-bottom {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      font-family: sans-serif;
+      color: #fff;
+      font-size: 14px;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 5px 10px;
+      border-radius: 4px;
+      display: none;
+      /* Hidden initially */
+      align-items: center;
+    }
+
+    #file-name-bottom {
+      margin-right: 8px;
+      /* Space between file name and remove button */
+    }
+
+    #remove-file-bottom {
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #hidden-file-input {
+      display: none;
+      /* Hide the actual file input */
+    }
+
+    /* Instruction icon (uses native title attribute for tooltip) */
+    #tooltip-container {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      /* moved to right bottom */
+      left: auto;
+      cursor: pointer;
+      color: #fff;
+      z-index: 10;
+      font-size: 20px;
+    }
+
+    /* Popup styles for song selection */
+    .popup {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+    }
+
+    .popup-content {
+      background: #0f0f10;
+      color: #fff;
+      padding: 18px;
+      border-radius: 8px;
+      width: min(540px, 90%);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+      position: relative;
+    }
+
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .popup-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .close-modal-btn {
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .song-list ul {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 10px 0;
+      max-height: 240px;
+      overflow: auto;
+    }
+
+    .song-list li {
+      padding: 8px 10px;
+      margin: 6px 0;
+      background: #151517;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .song-list li:hover {
+      background: #1f1f21;
+    }
+
+    .song-item-content {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .play-icon {
+      color: #fff;
+      font-size: 14px;
+    }
