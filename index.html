@@ -721,37 +721,40 @@
         const maxLinesPerFrame = 25; // Increase this to allow faster transitions during drops
         let linesAdded = 0;
 
-        while (lines.length < targetLineCount && linesAdded < maxLinesPerFrame) {
-          // Add lines, distributing across frequency ranges with their assigned initial color
-          const linesPerSection = Math.floor(targetLineCount / 3);
-          let frequencyRangeToAdd;
-          // Add new lines with random colors
-          const colorToAdd = new THREE.Color(
-            Math.random(),
-            Math.random(),
-            Math.random()
-          ); // Completely random color
+        if (lines.length < targetLineCount) {
+          let bassLines = 0;
+          let midsLines = 0;
+          let trebleLines = 0;
 
-          // Simple logic to try and balance ranges when adding
-          const bassLines = lines.filter(
-            (line) => line.userData.frequencyRange === "bass"
-          ).length;
-          const midsLines = lines.filter(
-            (line) => line.userData.frequencyRange === "mids"
-          ).length;
-          const trebleLines = lines.filter(
-            (line) => line.userData.frequencyRange === "treble"
-          ).length;
+          lines.forEach((line) => {
+            if (line.userData.frequencyRange === "bass") bassLines++;
+            else if (line.userData.frequencyRange === "mids") midsLines++;
+            else if (line.userData.frequencyRange === "treble") trebleLines++;
+          });
 
-          if (bassLines <= midsLines && bassLines <= trebleLines) {
-            frequencyRangeToAdd = "bass";
-          } else if (midsLines <= bassLines && midsLines <= trebleLines) {
-            frequencyRangeToAdd = "mids";
-          } else {
-            frequencyRangeToAdd = "treble";
+          while (lines.length < targetLineCount && linesAdded < maxLinesPerFrame) {
+            // Add lines, distributing across frequency ranges with their assigned initial color
+            let frequencyRangeToAdd;
+            // Add new lines with random colors
+            const colorToAdd = new THREE.Color(
+              Math.random(),
+              Math.random(),
+              Math.random()
+            ); // Completely random color
+
+            if (bassLines <= midsLines && bassLines <= trebleLines) {
+              frequencyRangeToAdd = "bass";
+              bassLines++;
+            } else if (midsLines <= bassLines && midsLines <= trebleLines) {
+              frequencyRangeToAdd = "mids";
+              midsLines++;
+            } else {
+              frequencyRangeToAdd = "treble";
+              trebleLines++;
+            }
+            addLine(frequencyRangeToAdd, colorToAdd);
+            linesAdded++;
           }
-          addLine(frequencyRangeToAdd, colorToAdd);
-          linesAdded++;
         }
 
         let linesRemoved = 0;
