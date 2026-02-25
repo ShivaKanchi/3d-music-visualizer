@@ -208,7 +208,15 @@
     function createLines(count) {
       // Remove existing lines before creating new ones if this is a re-creation
       if (lines.length > 0) {
-        lines.forEach((line) => scene.remove(line));
+        const disposedMaterials = new Set();
+        lines.forEach((line) => {
+          scene.remove(line);
+          if (line.geometry) line.geometry.dispose();
+          if (line.material && !disposedMaterials.has(line.material)) {
+            line.material.dispose();
+            disposedMaterials.add(line.material);
+          }
+        });
         lines.length = 0;
       }
 
