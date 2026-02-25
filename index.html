@@ -6,7 +6,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="referrer" content="no-referrer" />
   <title>Music Equalizer</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+    integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
   <style>
     body {
       margin: 0;
@@ -200,7 +202,9 @@
     <span id="file-name-bottom"></span>
     <span id="remove-file-bottom">x</span>
   </div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"
+    integrity="sha512-dLxUelApnYxpLt6K2iomGngnHO83iUvZytA3YjDUCjT0HDOHKXnVYdf3hU4JjM8uEhxf9nD1/ey98U3t2vZ0qQ=="
+    crossorigin="anonymous" referrerpolicy="no-referrer"></script>
   <script src="js/modal.js"></script>
   <script src="js/player.js"></script>
   <script src="js/visualizer.js"></script>
@@ -288,127 +292,6 @@
         scene.add(line);
         lines.push(line);
       }
-    }
-
-    // Popup open/close and population logic
-    function openSongPopup() {
-      const popup = document.getElementById("song-selection-popup");
-      if (popup) {
-        popup.style.display = "flex";
-        popup.setAttribute("aria-hidden", "false");
-        populateSongList();
-      }
-    }
-
-    function closeSongPopup() {
-      const popup = document.getElementById("song-selection-popup");
-      if (popup) {
-        popup.style.display = "none";
-        popup.setAttribute("aria-hidden", "true");
-      }
-    }
-
-    function populateSongList() {
-      const ul = document.getElementById("predefined-songs");
-      if (!ul) return;
-      ul.innerHTML = "";
-      // Try fetching metadata file to build list of available songs
-      fetch("data/music-metadata.json")
-        .then((res) => res.json())
-        .then((data) => {
-          // metadata may include multiple fields; support filename or tracks
-          const entries = [];
-          if (Array.isArray(data.tracks) && data.tracks.length) {
-            data.tracks.forEach((t, idx) => {
-              entries.push({
-                name: t.title || t.filename || "Track " + (idx + 1),
-                file: t.filename || t.file || t.src,
-                viz: t.viz || "spiral",
-              });
-            });
-          } else if (data.filename) {
-            entries.push({
-              name: data.title || data.filename,
-              file: data.filename,
-              viz: data.viz || "spiral",
-            });
-          }
-          // Fallback if metadata didn't give any entries
-          if (entries.length === 0) {
-            entries.push({
-              name: "Default song",
-              file: data.filename || "",
-              viz: "spiral",
-            });
-          }
-
-          entries.forEach((entry) => {
-            const li = document.createElement("li");
-            const songContent = document.createElement("div");
-            songContent.className = "song-item-content";
-
-            // Add play icon
-            const playIcon = document.createElement("i");
-            playIcon.className = "fas fa-play play-icon";
-
-            // Add song name
-            const songName = document.createElement("span");
-            songName.textContent = entry.name;
-
-            songContent.appendChild(playIcon);
-            songContent.appendChild(songName);
-
-            li.appendChild(songContent);
-            li.dataset.file = entry.file;
-            li.dataset.viz = entry.viz || "spiral";
-
-            li.addEventListener("click", () => {
-              closeSongPopup();
-              if (li.dataset.file) {
-                currentVisualization = li.dataset.viz || "spiral";
-                loadAudioFromUrl("music/" + li.dataset.file);
-              }
-            });
-            ul.appendChild(li);
-          });
-        })
-        .catch(() => {
-          // Fallback hardcoded list
-          const fallback = [
-            {
-              name: "Default (provided)",
-              file: "default.mp3",
-              viz: "", // spiral
-            },
-          ];
-          fallback.forEach((entry) => {
-            const li = document.createElement("li");
-            const songContent = document.createElement("div");
-            songContent.className = "song-item-content";
-
-            // Add play icon
-            const playIcon = document.createElement("i");
-            playIcon.className = "fas fa-play play-icon";
-
-            // Add song name
-            const songName = document.createElement("span");
-            songName.textContent = entry.name;
-
-            songContent.appendChild(playIcon);
-            songContent.appendChild(songName);
-
-            li.appendChild(songContent);
-            li.dataset.file = entry.file;
-            li.dataset.viz = entry.viz;
-
-            li.addEventListener("click", () => {
-              closeSongPopup();
-              currentVisualization = entry.viz;
-              loadAudioFromUrl("music/" + entry.file);
-            });
-            ul.appendChild(li);
-          });
-        });
     }
 
     // Function to create a particle system (stars)
@@ -545,6 +428,15 @@
     function handleFileSelect(event) {
       const file = event.target.files[0];
       if (file) {
+        // Security check: Limit file size to 50MB to prevent DoS
+        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+        if (file.size > MAX_FILE_SIZE) {
+          alert("File is too large. Please select a file smaller than 50MB.");
+          console.error("File size exceeds limit:", file.size);
+          event.target.value = ""; // Clear the file input
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = function (e) {
           // Use a temporary context for decoding so we don’t overwrite the active 'audioContext' yet
@@ -722,37 +614,40 @@
         const maxLinesPerFrame = 25; // Increase this to allow faster transitions during drops
         let linesAdded = 0;
 
-        while (lines.length < targetLineCount && linesAdded < maxLinesPerFrame) {
-          // Add lines, distributing across frequency ranges with their assigned initial color
-          const linesPerSection = Math.floor(targetLineCount / 3);
-          let frequencyRangeToAdd;
-          // Add new lines with random colors
-          const colorToAdd = new THREE.Color(
-            Math.random(),
-            Math.random(),
-            Math.random()
-          ); // Completely random color
+        if (lines.length < targetLineCount) {
+          let bassLines = 0;
+          let midsLines = 0;
+          let trebleLines = 0;
 
-          // Simple logic to try and balance ranges when adding
-          const bassLines = lines.filter(
-            (line) => line.userData.frequencyRange === "bass"
-          ).length;
-          const midsLines = lines.filter(
-            (line) => line.userData.frequencyRange === "mids"
-          ).length;
-          const trebleLines = lines.filter(
-            (line) => line.userData.frequencyRange === "treble"
-          ).length;
+          lines.forEach((line) => {
+            if (line.userData.frequencyRange === "bass") bassLines++;
+            else if (line.userData.frequencyRange === "mids") midsLines++;
+            else if (line.userData.frequencyRange === "treble") trebleLines++;
+          });
 
-          if (bassLines <= midsLines && bassLines <= trebleLines) {
-            frequencyRangeToAdd = "bass";
-          } else if (midsLines <= bassLines && midsLines <= trebleLines) {
-            frequencyRangeToAdd = "mids";
-          } else {
-            frequencyRangeToAdd = "treble";
+          while (lines.length < targetLineCount && linesAdded < maxLinesPerFrame) {
+            // Add lines, distributing across frequency ranges with their assigned initial color
+            let frequencyRangeToAdd;
+            // Add new lines with random colors
+            const colorToAdd = new THREE.Color(
+              Math.random(),
+              Math.random(),
+              Math.random()
+            ); // Completely random color
+
+            if (bassLines <= midsLines && bassLines <= trebleLines) {
+              frequencyRangeToAdd = "bass";
+              bassLines++;
+            } else if (midsLines <= bassLines && midsLines <= trebleLines) {
+              frequencyRangeToAdd = "mids";
+              midsLines++;
+            } else {
+              frequencyRangeToAdd = "treble";
+              trebleLines++;
+            }
+            addLine(frequencyRangeToAdd, colorToAdd);
+            linesAdded++;
           }
-          addLine(frequencyRangeToAdd, colorToAdd);
-          linesAdded++;
         }
 
         let linesRemoved = 0;
@@ -1080,13 +975,6 @@
 
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
-
-    // On window load, only set up small UI pieces. Three.js is
-    // initialized when audio starts playing (see `initAudio`).
-    window.onload = function () {
-      if (window.movePlayIconToBottomRight)
-        window.movePlayIconToBottomRight();
-    };
 
     function playDefaultAudio() {
       fetch("data/music-metadata.json")
