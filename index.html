@@ -975,13 +975,6 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
-    // On window load, only set up small UI pieces. Three.js is
-    // initialized when audio starts playing (see `initAudio`).
-    window.onload = function () {
-      if (window.movePlayIconToBottomRight)
-        window.movePlayIconToBottomRight();
-    };
-
     function playDefaultAudio() {
       fetch("data/music-metadata.json")
         .then((response) => response.json())
