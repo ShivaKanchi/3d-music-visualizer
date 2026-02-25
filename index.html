@@ -544,6 +544,15 @@
     function handleFileSelect(event) {
       const file = event.target.files[0];
       if (file) {
+        // Security check: Limit file size to 50MB to prevent DoS
+        const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+        if (file.size > MAX_FILE_SIZE) {
+          alert("File is too large. Please select a file smaller than 50MB.");
+          console.error("File size exceeds limit:", file.size);
+          event.target.value = ""; // Clear the file input
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = function (e) {
           // Use a temporary context for decoding so we don’t overwrite the active 'audioContext' yet
