@@ -204,6 +204,11 @@
   <script src="js/player.js"></script>
   <script src="js/visualizer.js"></script>
   <script>
+    // Reusable Three.js objects to minimize allocations in the render loop
+    const v3_reusable = new THREE.Vector3();
+    const color_reusable = new THREE.Color();
+    const hsl_reusable = { h: 0, s: 0, l: 0 };
+
     // Function to create a specified number of lines
     function createLines(count) {
       // Remove existing lines before creating new ones if this is a re-creation
@@ -690,7 +695,7 @@
         analyser.getByteFrequencyData(dataArray); // Get frequency data
 
         const dataArrayLength = dataArray.length;
-        const color = new THREE.Color();
+        const color = color_reusable;
 
         // Calculate overall spectral complexity
         let totalAmplitude = 0;
@@ -794,14 +799,13 @@
             const angle =
               (i / lines.length) * Math.PI * 8 + performance.now() * 0.0005;
             const radius = 20 + extendedLength * 2;
-            endPoint = new THREE.Vector3(
+            endPoint = v3_reusable.set(
               Math.cos(angle) * radius,
               Math.sin(angle) * radius,
               (i / lines.length - 0.5) * 60 + extendedLength
             );
           } else {
-            endPoint = line.userData.direction
-              .clone()
+            endPoint = v3_reusable.copy(line.userData.direction)
               .multiplyScalar(extendedLength);
           }
 
@@ -813,7 +817,7 @@
           // Update vertex colors based on amplitude and the line's current color (either initial or random)
           // Use the stored initialColor as the base for HSL adjustment
           const baseColor = line.userData.initialColor;
-          const hsl = { h: 0, s: 0, l: 0 }; // Temporary object for HSL values
+          const hsl = hsl_reusable; // Temporary object for HSL values
           baseColor.getHSL(hsl); // Get HSL from the base color
 
           // Adjust both saturation and lightness based on amplitude for more dynamic colors
@@ -928,12 +932,11 @@
               (Math.random() - 0.5) * 0.01 * deltaTime * 60;
 
             // Keep non-shooting stars within a large boundary
-            const starPos = new THREE.Vector3(
-              starPositions[starIndex],
-              starPositions[starIndex + 1],
-              starPositions[starIndex + 2]
-            );
-            if (starPos.length() > 900) {
+            const x = starPositions[starIndex];
+            const y = starPositions[starIndex + 1];
+            const z = starPositions[starIndex + 2];
+            // Use squared distance for better performance (avoid Vector3 allocation and sqrt)
+            if (x * x + y * y + z * z > 810000) {
               const radius = Math.random() * 800 + 50;
               const theta = Math.random() * Math.PI * 2;
               const phi = Math.acos(Math.random() * 2 - 1);
