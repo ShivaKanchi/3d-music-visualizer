@@ -1,0 +1,13 @@
+{
+  "name": "3d-music-visualizer",
+  "version": "1.0.0",
+  "description": "A 3D music visualizer",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}
