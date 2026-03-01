@@ -1,0 +1,8 @@
+127.0.0.1 - - [25/Feb/2026 18:29:33] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 18:29:33] "GET /js/modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 18:29:33] "GET /js/visualizer.js HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 18:29:33] "GET /js/player.js HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 18:30:18] "GET /index.html HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 18:30:18] "GET /js/modal.js HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 18:30:18] "GET /js/player.js HTTP/1.1" 200 -
+127.0.0.1 - - [25/Feb/2026 18:30:18] "GET /js/visualizer.js HTTP/1.1" 200 -

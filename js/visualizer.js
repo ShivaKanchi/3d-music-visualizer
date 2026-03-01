@@ -94,17 +94,6 @@ function initThree() {
   const playBtn = document.getElementById("tooltip-container");
   if (playBtn) playBtn.addEventListener("click", playDefaultAudio);
 
-  const closePopup = document.getElementById("close-popup");
-  if (closePopup) closePopup.addEventListener("click", closeSongPopup);
-
-  const popupUploadBtn = document.getElementById("popup-upload-btn");
-  if (popupUploadBtn)
-    popupUploadBtn.addEventListener("click", () => {
-      const h = document.getElementById("hidden-file-input");
-      if (h) h.click();
-      closeSongPopup();
-    });
-
   // Start render loop (animation will only update visuals when audio analyser exists)
   animateEqualizer();
 }
